@@ -31,12 +31,12 @@
 - [x] Create seed data for testing
 - [x] Document database relationships
 
-### 0.4 API Specifications
-- [ ] Define OpenAPI schemas for all services
-- [ ] Document MCP tool specifications
-- [ ] Create example requests/responses
-- [ ] Define WebSocket event formats
-- [ ] Error code standardization
+### 0.4 API Specifications ✓
+- [x] Define OpenAPI schemas for all services
+- [x] Document MCP tool specifications
+- [x] Create example requests/responses
+- [x] Define WebSocket event formats
+- [x] Error code standardization
 
 ### 0.5 Basic CI/CD
 - [ ] Simple GitHub Actions for tests and linting

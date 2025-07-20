@@ -1,0 +1,860 @@
+openapi: 3.0.3
+info:
+  title: Game Djinn Web API
+  description: |
+    Main web service API for Game Djinn - platform-agnostic gaming library management.
+    
+    ## Authentication
+    - JWT Bearer tokens for session authentication
+    - Single admin user for homelab deployment
+    
+    ## Rate Limiting
+    - 100 requests per minute per IP
+    - Higher limits for authenticated users
+    
+  version: 1.0.0
+  contact:
+    name: Game Djinn
+    url: https://github.com/jimsantora/game-djinn
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://game-djinn.local
+    description: Local homelab deployment
+
+paths:
+  # Authentication endpoints
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login with credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        429:
+          $ref: '#/components/responses/RateLimited'
+
+  /auth/refresh:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  # Platform management
+  /platforms:
+    get:
+      tags: [Platforms]
+      summary: List all supported platforms
+      responses:
+        200:
+          description: List of platforms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Platform'
+
+  /platforms/{platform_id}/libraries:
+    post:
+      tags: [Platforms]
+      summary: Add a new user library for a platform
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: platform_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLibraryRequest'
+      responses:
+        201:
+          description: Library created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLibrary'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  # Library management
+  /libraries:
+    get:
+      tags: [Libraries]
+      summary: List user libraries
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of user libraries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserLibrary'
+
+  /libraries/{library_id}/sync:
+    post:
+      tags: [Libraries]
+      summary: Trigger library sync
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: library_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: force
+          in: query
+          description: Force sync even if in progress
+          schema:
+            type: boolean
+            default: false
+      responses:
+        202:
+          description: Sync started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncOperation'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        409:
+          description: Sync already in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /libraries/{library_id}/games:
+    get:
+      tags: [Games]
+      summary: Get games in a library
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: library_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          description: Filter by game status
+          schema:
+            $ref: '#/components/schemas/GameStatus'
+        - name: search
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: genre
+          in: query
+          description: Filter by genre
+          schema:
+            type: string
+        - name: rating_min
+          in: query
+          description: Minimum user rating
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+        - name: limit
+          in: query
+          description: Number of games to return
+          schema:
+            type: integer
+            default: 50
+            maximum: 1000
+        - name: offset
+          in: query
+          description: Number of games to skip
+          schema:
+            type: integer
+            default: 0
+      responses:
+        200:
+          description: Games in library
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGames'
+
+  # Game management
+  /games/{game_id}:
+    get:
+      tags: [Games]
+      summary: Get detailed game information
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Game details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameDetails'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /games/search:
+    get:
+      tags: [Games]
+      summary: Search games across all platforms
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+        - name: platforms
+          in: query
+          description: Filter by platforms
+          schema:
+            type: array
+            items:
+              type: string
+        - name: esrb_rating
+          in: query
+          description: Filter by ESRB rating
+          schema:
+            $ref: '#/components/schemas/ESRBRating'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        200:
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameSearchResult'
+
+  # User game preferences
+  /user-games/{user_game_id}:
+    patch:
+      tags: [Games]
+      summary: Update user game preferences
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_game_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserGameRequest'
+      responses:
+        200:
+          description: User game updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGame'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  # Collections
+  /libraries/{library_id}/collections:
+    get:
+      tags: [Collections]
+      summary: List collections in a library
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: library_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: List of collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GameCollection'
+
+    post:
+      tags: [Collections]
+      summary: Create a new collection
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: library_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCollectionRequest'
+      responses:
+        201:
+          description: Collection created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameCollection'
+
+  # Analytics
+  /libraries/{library_id}/analytics:
+    get:
+      tags: [Analytics]
+      summary: Get gaming analytics for a library
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: library_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: period
+          in: query
+          description: Time period for analytics
+          schema:
+            type: string
+            enum: [week, month, quarter, year, all]
+            default: month
+      responses:
+        200:
+          description: Gaming analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamingAnalytics'
+
+  # Health check
+  /health:
+    get:
+      tags: [System]
+      summary: Health check endpoint
+      responses:
+        200:
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        503:
+          description: Service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying
+          schema:
+            type: integer
+
+  schemas:
+    # Authentication schemas
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        expires_in:
+          type: integer
+          description: Token expiration in seconds
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        expires_in:
+          type: integer
+
+    # Platform schemas
+    Platform:
+      type: object
+      properties:
+        platform_id:
+          type: string
+          format: uuid
+        platform_code:
+          type: string
+          example: steam
+        platform_name:
+          type: string
+          example: Steam
+        api_available:
+          type: boolean
+        icon_url:
+          type: string
+          format: uri
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    # Library schemas
+    UserLibrary:
+      type: object
+      properties:
+        library_id:
+          type: string
+          format: uuid
+        platform:
+          $ref: '#/components/schemas/Platform'
+        display_name:
+          type: string
+        sync_enabled:
+          type: boolean
+        last_sync_at:
+          type: string
+          format: date-time
+          nullable: true
+        sync_status:
+          $ref: '#/components/schemas/SyncStatus'
+        games_count:
+          type: integer
+        total_playtime_hours:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+
+    CreateLibraryRequest:
+      type: object
+      required: [user_identifier, display_name]
+      properties:
+        user_identifier:
+          type: string
+          description: Platform-specific user ID
+        display_name:
+          type: string
+        api_credentials:
+          type: object
+          description: Platform-specific credentials (encrypted)
+
+    # Sync schemas
+    SyncStatus:
+      type: string
+      enum: [pending, in_progress, completed, failed, rate_limited]
+
+    SyncOperation:
+      type: object
+      properties:
+        operation_id:
+          type: string
+          format: uuid
+        library_id:
+          type: string
+          format: uuid
+        operation_type:
+          type: string
+          enum: [full_sync, incremental_sync, manual_sync]
+        status:
+          type: string
+          enum: [started, in_progress, completed, failed, cancelled]
+        started_at:
+          type: string
+          format: date-time
+        games_processed:
+          type: integer
+        games_added:
+          type: integer
+        games_updated:
+          type: integer
+        errors_count:
+          type: integer
+
+    # Game schemas
+    GameStatus:
+      type: string
+      enum: [unplayed, playing, completed, abandoned, wishlist]
+
+    ESRBRating:
+      type: string
+      enum: [E, E10+, T, M, AO, RP]
+
+    Game:
+      type: object
+      properties:
+        game_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        slug:
+          type: string
+        developer:
+          type: string
+        publisher:
+          type: string
+        release_date:
+          type: string
+          format: date
+          nullable: true
+        genres:
+          type: array
+          items:
+            type: string
+        esrb_rating:
+          $ref: '#/components/schemas/ESRBRating'
+        metacritic_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+          nullable: true
+        cover_image_url:
+          type: string
+          format: uri
+          nullable: true
+
+    GameDetails:
+      allOf:
+        - $ref: '#/components/schemas/Game'
+        - type: object
+          properties:
+            description:
+              type: string
+            short_description:
+              type: string
+            tags:
+              type: array
+              items:
+                type: string
+            platforms_available:
+              type: array
+              items:
+                type: string
+            screenshots:
+              type: array
+              items:
+                type: string
+                format: uri
+            website_url:
+              type: string
+              format: uri
+              nullable: true
+            playtime_main_hours:
+              type: integer
+              nullable: true
+
+    UserGame:
+      type: object
+      properties:
+        user_game_id:
+          type: string
+          format: uuid
+        game:
+          $ref: '#/components/schemas/Game'
+        owned:
+          type: boolean
+        total_playtime_minutes:
+          type: integer
+        last_played_at:
+          type: string
+          format: date-time
+          nullable: true
+        game_status:
+          $ref: '#/components/schemas/GameStatus'
+        user_rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        is_favorite:
+          type: boolean
+        user_notes:
+          type: string
+          nullable: true
+
+    UpdateUserGameRequest:
+      type: object
+      properties:
+        game_status:
+          $ref: '#/components/schemas/GameStatus'
+        user_rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+        is_favorite:
+          type: boolean
+        user_notes:
+          type: string
+          nullable: true
+
+    GameSearchResult:
+      allOf:
+        - $ref: '#/components/schemas/Game'
+        - type: object
+          properties:
+            platforms_owned:
+              type: array
+              items:
+                type: string
+              description: Platforms where user owns this game
+
+    PaginatedGames:
+      type: object
+      properties:
+        games:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGame'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        has_more:
+          type: boolean
+
+    # Collection schemas
+    GameCollection:
+      type: object
+      properties:
+        collection_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        color:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+        icon:
+          type: string
+        is_smart:
+          type: boolean
+        games_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    CreateCollectionRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        color:
+          type: string
+          pattern: '^#[0-9a-fA-F]{6}$'
+          default: '#3b82f6'
+        icon:
+          type: string
+          default: folder
+        is_smart:
+          type: boolean
+          default: false
+        rules:
+          type: object
+          description: Smart collection rules (if is_smart is true)
+
+    # Analytics schemas
+    GamingAnalytics:
+      type: object
+      properties:
+        total_games:
+          type: integer
+        total_playtime_hours:
+          type: number
+        avg_session_hours:
+          type: number
+        games_by_status:
+          type: object
+          properties:
+            unplayed:
+              type: integer
+            playing:
+              type: integer
+            completed:
+              type: integer
+            abandoned:
+              type: integer
+        top_genres:
+          type: array
+          items:
+            type: object
+            properties:
+              genre:
+                type: string
+              count:
+                type: integer
+              playtime_hours:
+                type: number
+        playtime_by_month:
+          type: array
+          items:
+            type: object
+            properties:
+              month:
+                type: string
+                format: date
+              hours:
+                type: number
+        completion_rate:
+          type: number
+          description: Percentage of games completed
+
+    # System schemas
+    HealthCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        database:
+          type: boolean
+        redis:
+          type: boolean
+        external_apis:
+          type: object
+          properties:
+            steam:
+              type: boolean
+            rawg:
+              type: boolean
+            igdb:
+              type: boolean
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
