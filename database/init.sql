@@ -24,6 +24,17 @@ CREATE TYPE esrb_rating_enum AS ENUM (
     'E', 'E10+', 'T', 'M', 'AO', 'RP'
 );
 
+-- Create the platforms table first so we can insert into it
+CREATE TABLE IF NOT EXISTS platforms (
+    platform_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    platform_code VARCHAR(20) UNIQUE NOT NULL,
+    platform_name VARCHAR(100) NOT NULL,
+    api_available BOOLEAN DEFAULT false,
+    icon_url VARCHAR(500),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Insert default platforms
 INSERT INTO platforms (platform_code, platform_name, api_available, icon_url) VALUES
     ('steam', 'Steam', true, 'https://steamcdn-a.akamaihd.net/steam/apps/APPID/header.jpg'),
