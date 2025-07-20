@@ -17,7 +17,7 @@ INSERT INTO games (
     title, normalized_title, slug, description, short_description,
     release_date, developer, publisher, genres, tags, platforms_available,
     esrb_rating, esrb_descriptors, metacritic_score, steam_score,
-    cover_image_url, website_url, steam_appid, rawg_id,
+    cover_image_url, website_url, steam_appid,
     playtime_main_hours, playtime_completionist_hours
 ) VALUES 
 (
@@ -39,7 +39,6 @@ INSERT INTO games (
     'https://cdn.akamai.steamstatic.com/steam/apps/292030/header.jpg',
     'https://thewitcher.com/en/witcher3',
     292030,
-    3328,
     51,
     173
 ),
@@ -62,7 +61,6 @@ INSERT INTO games (
     'https://cdn.akamai.steamstatic.com/steam/apps/1091500/header.jpg',
     'https://www.cyberpunk.net/',
     1091500,
-    41494,
     24,
     60
 ),
@@ -85,7 +83,6 @@ INSERT INTO games (
     'https://cdn.akamai.steamstatic.com/steam/apps/1145360/header.jpg',
     'https://www.supergiantgames.com/games/hades/',
     1145360,
-    22511,
     22,
     95
 ),
@@ -108,7 +105,6 @@ INSERT INTO games (
     'https://cdn.akamai.steamstatic.com/steam/apps/945360/header.jpg',
     'https://www.innersloth.com/games/among-us/',
     945360,
-    58134,
     2,
     10
 ),
@@ -131,7 +127,6 @@ INSERT INTO games (
     null,
     'https://www.minecraft.net/',
     null,
-    22511,
     null,
     null
 )

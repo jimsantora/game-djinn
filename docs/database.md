@@ -44,7 +44,6 @@ Universal game catalog with rich metadata.
 
 **External IDs:**
 - `steam_appid`: Steam application ID
-- `rawg_id`: RAWG database ID
 - `igdb_id`: Internet Game Database ID
 
 **Search Features:**
@@ -97,7 +96,7 @@ games (1) ──── (*) game_matches ──── (*) games (1)
 Games can be matched across platforms using:
 - **Exact Title Match**: Identical normalized titles
 - **Fuzzy Title Match**: Similar titles with confidence score
-- **External ID Match**: Shared RAWG/IGDB identifiers
+- **External ID Match**: Shared IGDB identifiers
 - **Manual Match**: User-verified matches
 
 The `game_matches` table tracks these relationships with confidence scores.

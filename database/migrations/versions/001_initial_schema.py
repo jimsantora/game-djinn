@@ -121,7 +121,6 @@ def upgrade() -> None:
         sa.Column('gog_id', sa.String(100)),
         sa.Column('epic_id', sa.String(100)),
         sa.Column('xbox_id', sa.String(100)),
-        sa.Column('rawg_id', sa.Integer()),
         sa.Column('igdb_id', sa.Integer()),
         sa.Column('playtime_main_hours', sa.Integer()),
         sa.Column('playtime_completionist_hours', sa.Integer()),
@@ -142,7 +141,6 @@ def upgrade() -> None:
     # Create indexes
     op.create_index('idx_games_normalized_title', 'games', ['normalized_title'])
     op.create_index('idx_games_steam_appid', 'games', ['steam_appid'])
-    op.create_index('idx_games_rawg_id', 'games', ['rawg_id'])
     op.create_index('idx_games_igdb_id', 'games', ['igdb_id'])
     op.create_index('idx_games_search_vector', 'games', ['search_vector'], postgresql_using='gin')
     op.create_index('idx_games_esrb_rating', 'games', ['esrb_rating'])

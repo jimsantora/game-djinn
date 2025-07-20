@@ -267,7 +267,6 @@ curl -H "X-API-Key: your-mcp-api-key" \
   "platforms_available": ["steam", "gog", "xbox", "playstation"],
   "external_ids": {
     "steam_appid": 292030,
-    "rawg_id": 3328,
     "igdb_id": 1942
   },
   "media": {

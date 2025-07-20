@@ -76,7 +76,6 @@ CREATE TABLE games (
     xbox_id VARCHAR(100),
     
     -- Enrichment metadata
-    rawg_id INTEGER,
     igdb_id INTEGER,
     
     -- Time estimates
@@ -229,7 +228,6 @@ CREATE TABLE sync_operations (
 -- Create indexes for performance
 CREATE INDEX idx_games_normalized_title ON games(normalized_title);
 CREATE INDEX idx_games_steam_appid ON games(steam_appid) WHERE steam_appid IS NOT NULL;
-CREATE INDEX idx_games_rawg_id ON games(rawg_id) WHERE rawg_id IS NOT NULL;
 CREATE INDEX idx_games_igdb_id ON games(igdb_id) WHERE igdb_id IS NOT NULL;
 CREATE INDEX idx_games_search_vector ON games USING gin(search_vector);
 CREATE INDEX idx_games_esrb_rating ON games(esrb_rating);

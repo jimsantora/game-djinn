@@ -39,8 +39,7 @@
 ### External APIs
 - **Steam Web API** - Full library access
 - **Xbox Game Pass API** - Catalog and user data
-- **RAWG API** - 500k+ games database with ESRB ratings
-- **IGDB API** - Additional game metadata
+- **IGDB API** - Comprehensive game metadata and ratings
 - **Metacritic API** - Review scores
 
 ## Service Architecture
@@ -121,7 +120,7 @@
 - [ ] Abstract base class for platform integrations
 - [ ] Steam integration with full Web API support
 - [ ] Manual import integration (CSV/JSON upload)
-- [ ] Game data enrichment service (RAWG + IGDB APIs)
+- [ ] Game data enrichment service (IGDB API)
 - [ ] Cross-platform game matching logic
 
 #### 1.3 MCP Server (Core Component)
@@ -275,7 +274,6 @@ user_achievements (user_achievement_id, user_game_id, achievement_id, unlocked_a
 
 ### Required API Keys
 - **Steam Web API Key** (free) - https://steamcommunity.com/dev/apikey
-- **RAWG API Key** (free) - https://rawg.io/apidocs
 - **IGDB Client ID & Access Token** (free) - https://api.igdb.com/
 - **Xbox Live API** (OAuth) - https://docs.microsoft.com/en-us/gaming/
 
@@ -287,7 +285,6 @@ user_achievements (user_achievement_id, user_game_id, achievement_id, unlocked_a
 
 ### Rate Limits by Service
 - **Steam Web API**: 100 requests per 5 minutes, 100k daily
-- **RAWG API**: 20 requests per second (free tier), 20k monthly
 - **IGDB API**: 4 requests per second, 50k daily
 - **Xbox API**: 300 requests per minute, 3k hourly
 
@@ -314,7 +311,6 @@ services:
     environment:
       - DATABASE_URL=postgresql://user:pass@db:5432/gamedjinn
       - STEAM_API_KEY=${STEAM_API_KEY}
-      - RAWG_API_KEY=${RAWG_API_KEY}
   
   ai-service:
     build: ./services/ai-service
@@ -393,7 +389,6 @@ ADMIN_PASSWORD=changeme
 
 # External APIs (Required)
 STEAM_API_KEY=your-steam-api-key
-RAWG_API_KEY=your-rawg-api-key
 IGDB_CLIENT_ID=your-igdb-client-id
 IGDB_ACCESS_TOKEN=your-igdb-access-token
 
@@ -413,7 +408,7 @@ MCP_PORT=8080
 - [ ] MCP server functional with core tools
 - [ ] Basic web interface for library browsing
 - [ ] Manual game import working
-- [ ] Game metadata enrichment from RAWG/IGDB
+- [ ] Game metadata enrichment from IGDB
 
 ### AI Integration Success (Phase 2)
 - [ ] AI agent responds to natural language gaming queries
@@ -852,7 +847,6 @@ ADMIN_PASSWORD=changeme
 
 # External APIs (Required)
 STEAM_API_KEY=your-steam-api-key
-RAWG_API_KEY=your-rawg-api-key
 IGDB_CLIENT_ID=your-igdb-client-id
 IGDB_ACCESS_TOKEN=your-igdb-access-token
 
