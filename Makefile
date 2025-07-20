@@ -1,4 +1,4 @@
-.PHONY: help setup dev test lint build clean db-migrate db-seed db-reset stop logs ps
+.PHONY: help setup dev test lint build clean db-migrate db-seed db-reset stop logs ps test-mcp test-mcp-local test-mcp-tools test-mcp-install
 
 # Default target
 .DEFAULT_GOAL := help
@@ -81,6 +81,27 @@ test: ## Run all tests
 	@echo "${YELLOW}Running JavaScript tests...${NC}"
 	@docker-compose run --rm web sh -c "cd /frontend && npm test"
 	@echo "${GREEN}All tests completed!${NC}"
+
+# MCP-specific test targets
+test-mcp: ## Run MCP server tests
+	@echo "${CYAN}Running MCP server tests...${NC}"
+	@docker-compose run --rm mcp-server pytest tests/ -v --tb=short --disable-warnings
+	@echo "${GREEN}MCP tests completed!${NC}"
+
+test-mcp-local: ## Run MCP tests locally (requires local env)
+	@echo "${CYAN}Running MCP server tests locally...${NC}"
+	@cd services/mcp-server && python -m pytest tests/ -v --tb=short --disable-warnings
+	@echo "${GREEN}MCP tests completed!${NC}"
+
+test-mcp-tools: ## Run specific MCP tool tests
+	@echo "${CYAN}Running MCP tool tests...${NC}"
+	@docker-compose run --rm mcp-server pytest tests/ -v -k "$(PATTERN)" --tb=short --disable-warnings
+	@echo "${GREEN}MCP tool tests completed!${NC}"
+
+test-mcp-install: ## Install MCP test dependencies
+	@echo "${CYAN}Installing MCP test dependencies...${NC}"
+	@cd services/mcp-server && pip install -r requirements-test.txt
+	@echo "${GREEN}MCP test dependencies installed!${NC}"
 
 # Lint target
 lint: ## Run linters (ruff, black, eslint)
