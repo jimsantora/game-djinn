@@ -1,0 +1,130 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: gamedjinn
+      POSTGRES_USER: gamedjinn
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gamedjinn"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - ollama_models:/root/.ollama
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_MODELS=${OLLAMA_MODEL}
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  web:
+    build: ./services/web
+    ports:
+      - "${WEB_PORT}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mcp-server:
+        condition: service_started
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - ./services/web/backend:/app
+      - ./services/web/frontend:/frontend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  mcp-server:
+    build: ./services/mcp-server
+    ports:
+      - "${MCP_PORT}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - MCP_API_KEY=${MCP_API_KEY}
+      - STEAM_API_KEY=${STEAM_API_KEY}
+      - RAWG_API_KEY=${RAWG_API_KEY}
+      - IGDB_CLIENT_ID=${IGDB_CLIENT_ID}
+      - IGDB_ACCESS_TOKEN=${IGDB_ACCESS_TOKEN}
+      - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - ./services/mcp-server/src:/app
+    command: python main.py
+
+  ai-service:
+    build: ./services/ai-service
+    depends_on:
+      - mcp-server
+      - ollama
+    environment:
+      - MCP_SERVER_URL=${MCP_SERVER_URL}
+      - MCP_API_KEY=${MCP_API_KEY}
+      - OLLAMA_URL=${OLLAMA_URL}
+      - OLLAMA_MODEL=${OLLAMA_MODEL}
+      - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - ./services/ai-service/src:/app
+    command: python main.py
+
+  platform-sync:
+    build: ./services/platform-sync
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - STEAM_API_KEY=${STEAM_API_KEY}
+      - RAWG_API_KEY=${RAWG_API_KEY}
+      - IGDB_CLIENT_ID=${IGDB_CLIENT_ID}
+      - IGDB_ACCESS_TOKEN=${IGDB_ACCESS_TOKEN}
+      - XBOX_CLIENT_ID=${XBOX_CLIENT_ID}
+      - XBOX_CLIENT_SECRET=${XBOX_CLIENT_SECRET}
+      - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - ./services/platform-sync/src:/app
+    command: python main.py
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  ollama_models:
+    driver: local
