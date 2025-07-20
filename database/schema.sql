@@ -74,9 +74,7 @@ CREATE TABLE games (
     gog_id VARCHAR(100),
     epic_id VARCHAR(100),
     xbox_id VARCHAR(100),
-    
-    -- Enrichment metadata
-    igdb_id INTEGER,
+    psn_id VARCHAR(100),
     
     -- Time estimates
     playtime_main_hours INTEGER,
@@ -228,7 +226,8 @@ CREATE TABLE sync_operations (
 -- Create indexes for performance
 CREATE INDEX idx_games_normalized_title ON games(normalized_title);
 CREATE INDEX idx_games_steam_appid ON games(steam_appid) WHERE steam_appid IS NOT NULL;
-CREATE INDEX idx_games_igdb_id ON games(igdb_id) WHERE igdb_id IS NOT NULL;
+CREATE INDEX idx_games_xbox_id ON games(xbox_id) WHERE xbox_id IS NOT NULL;
+CREATE INDEX idx_games_psn_id ON games(psn_id) WHERE psn_id IS NOT NULL;
 CREATE INDEX idx_games_search_vector ON games USING gin(search_vector);
 CREATE INDEX idx_games_esrb_rating ON games(esrb_rating);
 CREATE INDEX idx_games_metacritic_score ON games(metacritic_score) WHERE metacritic_score IS NOT NULL;

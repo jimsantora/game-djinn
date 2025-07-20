@@ -75,8 +75,6 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - MCP_API_KEY=${MCP_API_KEY}
       - STEAM_API_KEY=${STEAM_API_KEY}
-      - IGDB_CLIENT_ID=${IGDB_CLIENT_ID}
-      - IGDB_ACCESS_TOKEN=${IGDB_ACCESS_TOKEN}
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
       - ./services/mcp-server/src:/app
@@ -108,8 +106,6 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
       - STEAM_API_KEY=${STEAM_API_KEY}
-      - IGDB_CLIENT_ID=${IGDB_CLIENT_ID}
-      - IGDB_ACCESS_TOKEN=${IGDB_ACCESS_TOKEN}
       - XBOX_CLIENT_ID=${XBOX_CLIENT_ID}
       - XBOX_CLIENT_SECRET=${XBOX_CLIENT_SECRET}
       - LOG_LEVEL=${LOG_LEVEL}

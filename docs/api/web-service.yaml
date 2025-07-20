@@ -836,8 +836,6 @@ components:
           properties:
             steam:
               type: boolean
-            igdb:
-              type: boolean
         timestamp:
           type: string
           format: date-time

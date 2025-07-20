@@ -448,9 +448,9 @@ All services return errors in this standardized format:
 {
   "error": {
     "code": "EXTERNAL_SERVICE_UNAVAILABLE",
-    "message": "IGDB API is currently unavailable",
+    "message": "Steam API is currently unavailable",
     "details": {
-      "service": "igdb",
+      "service": "steam",
       "status": "maintenance",
       "estimated_restoration": "2024-07-20T14:00:00Z",
       "impact": "Game metadata enrichment disabled"

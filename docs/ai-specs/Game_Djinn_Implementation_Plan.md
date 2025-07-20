@@ -39,7 +39,6 @@
 ### External APIs
 - **Steam Web API** - Full library access
 - **Xbox Game Pass API** - Catalog and user data
-- **IGDB API** - Comprehensive game metadata and ratings
 - **Metacritic API** - Review scores
 
 ## Service Architecture
@@ -120,7 +119,7 @@
 - [ ] Abstract base class for platform integrations
 - [ ] Steam integration with full Web API support
 - [ ] Manual import integration (CSV/JSON upload)
-- [ ] Game data enrichment service (IGDB API)
+- [ ] Steam native metadata enhancement
 - [ ] Cross-platform game matching logic
 
 #### 1.3 MCP Server (Core Component)
@@ -274,8 +273,10 @@ user_achievements (user_achievement_id, user_game_id, achievement_id, unlocked_a
 
 ### Required API Keys
 - **Steam Web API Key** (free) - https://steamcommunity.com/dev/apikey
-- **IGDB Client ID & Access Token** (free) - https://api.igdb.com/
+
+### Future Platform APIs
 - **Xbox Live API** (OAuth) - https://docs.microsoft.com/en-us/gaming/
+- **PlayStation Network API** - For future PSN integration
 
 ### Optional Enhancements
 - **Metacritic API** - For additional review scores
@@ -285,7 +286,6 @@ user_achievements (user_achievement_id, user_game_id, achievement_id, unlocked_a
 
 ### Rate Limits by Service
 - **Steam Web API**: 100 requests per 5 minutes, 100k daily
-- **IGDB API**: 4 requests per second, 50k daily
 - **Xbox API**: 300 requests per minute, 3k hourly
 
 ### Rate Limit Strategy
@@ -389,8 +389,6 @@ ADMIN_PASSWORD=changeme
 
 # External APIs (Required)
 STEAM_API_KEY=your-steam-api-key
-IGDB_CLIENT_ID=your-igdb-client-id
-IGDB_ACCESS_TOKEN=your-igdb-access-token
 
 # Service URLs
 MCP_SERVER_URL=http://mcp-server:8080
@@ -408,7 +406,7 @@ MCP_PORT=8080
 - [ ] MCP server functional with core tools
 - [ ] Basic web interface for library browsing
 - [ ] Manual game import working
-- [ ] Game metadata enrichment from IGDB
+- [ ] Steam metadata enhancement working
 
 ### AI Integration Success (Phase 2)
 - [ ] AI agent responds to natural language gaming queries
@@ -636,12 +634,6 @@ PLATFORM_LIMITS = {
         "monthly_limit": 20000,
         "retry_after": 2
     },
-    "igdb": {
-        "requests_per_window": 4,
-        "window_seconds": 1,
-        "daily_limit": 50000,
-        "retry_after": 1
-    },
     "xbox": {
         "requests_per_window": 300,
         "window_seconds": 60,
@@ -847,8 +839,6 @@ ADMIN_PASSWORD=changeme
 
 # External APIs (Required)
 STEAM_API_KEY=your-steam-api-key
-IGDB_CLIENT_ID=your-igdb-client-id
-IGDB_ACCESS_TOKEN=your-igdb-access-token
 
 # External APIs (Optional)
 XBOX_CLIENT_ID=

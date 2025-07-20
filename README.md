@@ -40,7 +40,6 @@ Game Djinn is a self-hosted, platform-agnostic gaming library management system 
 
 3. Edit `.env` with your API keys:
    - Steam Web API Key (https://steamcommunity.com/dev/apikey)
-   - IGDB Client ID & Access Token (https://api.igdb.com/)
 
 4. Run the setup:
    ```bash
@@ -119,5 +118,5 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) for deta
 ## Acknowledgments
 
 - Built with FastAPI, React, PostgreSQL, and the official MCP Python SDK
-- Game data powered by IGDB and platform APIs
+- Game data powered by Steam API with comprehensive metadata
 - Logo created with AI assistance

@@ -23,16 +23,12 @@
   - [ ] Playtime tracking and statistics
   - [ ] Steam ratings and review summaries
   - [ ] Content descriptors and maturity ratings
-- [ ] Create game data enrichment service (IGDB primary)
-  - [ ] IGDB API integration for comprehensive metadata
-  - [ ] Cover art and screenshot handling
-  - [ ] Genre, theme, and rating information
-  - [ ] Release date and platform information
-- [ ] Implement game matching logic for Steam + IGDB
-  - [ ] Steam ID to IGDB ID mapping
-  - [ ] Fuzzy title matching for missing mappings
-  - [ ] Developer/publisher correlation
-  - [ ] Manual override capability
+- [ ] Enhance Steam data with native metadata
+  - [ ] Steam store page data integration
+  - [ ] Enhanced cover art and screenshot handling from Steam
+  - [ ] Steam's native genre and tag system
+  - [ ] Steam content descriptors and ratings
+  - [ ] Steam review scores and community data
 
 ### 1.3 MCP Server (Core Component)
 - [ ] Set up standalone MCP server using official Python SDK
@@ -96,7 +92,7 @@
 ### Platform Integration
 - **Steam First**: Start with Steam Web API as primary platform
 - **Steam Integration Depth**: Include playtime, achievements, ratings, and maturity data
-- **Data Enrichment**: IGDB API as primary metadata source (RAWG removed)
+- **Data Enrichment**: Steam API as primary metadata source
 - **Future Platforms**: Architecture supports easy addition of other platforms
 
 ### API Architecture
@@ -112,7 +108,7 @@ Phase 1 will be considered successful when:
 - [ ] **Steam Library Sync**: Complete end-to-end Steam library synchronization
 - [ ] **MCP Server Functional**: All core tools working with external MCP clients
 - [ ] **Web Interface**: Basic library browsing and platform management
-- [ ] **Game Metadata**: Enrichment from IGDB API functional with comprehensive data
+- [ ] **Game Metadata**: Comprehensive Steam metadata integration working
 - [ ] **Authentication**: Secure admin access to web interface
 - [ ] **Real-time Updates**: WebSocket sync progress working
 
@@ -123,7 +119,7 @@ Phase 1 will be considered successful when:
 ### Unit Tests
 - [ ] Database model tests
 - [ ] Steam integration tests
-- [ ] IGDB integration tests
+- [ ] Steam metadata enrichment tests
 - [ ] MCP tool function tests
 - [ ] API endpoint tests
 - [ ] Authentication flow tests
@@ -139,7 +135,7 @@ Phase 1 will be considered successful when:
 - [ ] Steam API connection and comprehensive data fetching
 - [ ] MCP client connection (Claude Desktop)
 - [ ] Web interface usability and data presentation
-- [ ] IGDB metadata enrichment accuracy
+- [ ] Steam metadata enhancement accuracy
 - [ ] Error handling and recovery
 
 ## Development Workflow
@@ -164,25 +160,23 @@ make db-seed
 1. **RAWG Cleanup** - Remove all RAWG references from existing code/docs
 2. **Database Setup** - Get PostgreSQL running with schema
 3. **MCP Server** - Core functionality for AI integration
-4. **Steam Integration** - Comprehensive Steam API integration
-5. **IGDB Integration** - Primary metadata enrichment service
-6. **Web Backend** - FastAPI with environment-based authentication
-7. **Web Frontend** - React interface (functional but architecturally sound)
-8. **Integration** - Connect all services together
+4. **Steam Integration** - Comprehensive Steam API integration with metadata enhancement
+5. **Web Backend** - FastAPI with environment-based authentication
+6. **Web Frontend** - React interface (functional but architecturally sound)
+7. **Integration** - Connect all services together
 
 ## Notes
 
 ### Phase 1 Focus
 - **Steam Only**: Focus entirely on Steam platform (defer other platforms)
 - **Comprehensive Steam Data**: Include all available data (games, playtime, achievements, ratings)
-- **IGDB Metadata**: Rich game metadata from IGDB API
+- **Steam Metadata**: Rich game metadata from Steam's native APIs
 - **Functional UI**: Basic but well-architected interface for future polish
 - **Local Development**: All services running locally via Docker Compose
 - **Environment-Based Auth**: Configurable admin credentials
 
 ### External Dependencies
-- **Steam Web API Key**: Required for Steam integration
-- **IGDB Client ID & Access Token**: Required for game metadata enrichment
+- **Steam Web API Key**: Required for Steam integration and metadata
 - **Environment Variables**: Admin credentials configurable via .env
 
 ### Performance Considerations
