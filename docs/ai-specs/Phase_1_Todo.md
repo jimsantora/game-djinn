@@ -49,40 +49,45 @@
 
 ### 1.4 Basic Web Interface
 - [ ] Set up FastAPI backend with REST endpoints
-  - [ ] User authentication endpoints
-  - [ ] Library management endpoints
+  - [ ] Optional authentication endpoints (check env vars)
+  - [ ] Library management endpoints (CRUD operations)
   - [ ] Game browsing and search endpoints
-  - [ ] Platform configuration endpoints
-  - [ ] Sync operation endpoints
-- [ ] Create React frontend with basic functionality
-  - [ ] User login and session management
-  - [ ] Library browsing interface (grid/list views)
-  - [ ] Game detail pages
-  - [ ] Platform configuration interface
-  - [ ] Sync status and progress tracking
+  - [ ] Platform listing endpoints
+  - [ ] Sync operation endpoints (trigger, cancel, status)
+- [ ] Create React frontend with shadcn/ui
+  - [ ] React Router v7 setup
+  - [ ] Optional login page (conditional on auth config)
+  - [ ] Library management (create, view, edit, delete)
+  - [ ] Game browsing (toggleable grid/list views)
+  - [ ] Game detail pages with full metadata
+  - [ ] Sync management with progress tracking
 - [ ] Implement authentication and session management
-  - [ ] Single admin user setup for homelab
-  - [ ] JWT token generation and validation
-  - [ ] Redis-based session storage
+  - [ ] Optional admin auth from environment
+  - [ ] JWT tokens with httpOnly cookies
   - [ ] MCP server API key protection
-  - [ ] Session timeout and refresh logic
-- [ ] Add WebSocket integration for real-time updates
-  - [ ] Sync progress streaming
-  - [ ] Real-time notifications
-  - [ ] Connection management
-- [ ] Create responsive UI components
+  - [ ] Proxy-friendly auth bypass option
+- [ ] Add Socket.IO integration for real-time updates
+  - [ ] FastAPI with python-socketio
+  - [ ] Sync progress events
+  - [ ] Library update notifications
+  - [ ] Connection state management
+  - [ ] React hooks for Socket.IO
+- [ ] Create responsive UI components with shadcn/ui
   - [ ] Game cards with cover art
-  - [ ] Search and filter interface
-  - [ ] Platform status indicators
-  - [ ] Progress bars and loading states
+  - [ ] Search with Command component
+  - [ ] Filter interface with facets
+  - [ ] Progress bars and skeletons
+  - [ ] Toast notifications
+  - [ ] Mobile-responsive navigation
 
 ## Key Technical Decisions
 
 ### Authentication Strategy
-- **Web Interface**: JWT-based authentication with environment-configurable admin user
-- **MCP Server**: API key authentication for external clients
-- **Session Storage**: Redis for scalability and persistence
-- **Admin Configuration**: Username/password via environment variables
+- **Web Interface**: Optional JWT-based authentication (skipped if no admin credentials in env)
+- **Proxy Support**: Auth can be disabled for reverse proxy authentication
+- **MCP Server**: API key authentication using MCP_API_KEY from environment
+- **Token Storage**: JWT in httpOnly cookies (when auth enabled)
+- **Admin Configuration**: ADMIN_EMAIL/ADMIN_PASSWORD via environment variables
 
 ### Database Design
 - **Primary Database**: PostgreSQL with JSONB for flexible platform data
@@ -97,8 +102,9 @@
 
 ### API Architecture
 - **Backend**: FastAPI with async/await throughout
-- **Frontend**: React with Vite for modern development experience
-- **Real-time**: WebSocket for sync progress and notifications
+- **Frontend**: React with Vite, React Router v7, shadcn/ui components
+- **State Management**: React Query for server state, Context for auth only
+- **Real-time**: Socket.IO for sync progress and notifications
 - **Documentation**: Auto-generated OpenAPI specs
 
 ## Success Criteria
@@ -191,6 +197,15 @@ make db-seed
 - **Input Validation**: All user inputs properly validated
 - **SQL Injection**: Use parameterized queries throughout
 - **CORS**: Proper configuration for web interface
+- **Proxy Support**: Optional auth for reverse proxy scenarios
+
+### Frontend Technical Decisions
+- **UI Library**: shadcn/ui (copy-paste components, not a dependency)
+- **Routing**: React Router v7 with data loaders
+- **Data Fetching**: React Query with stale-while-revalidate
+- **Real-time**: Socket.IO client with automatic reconnection
+- **Forms**: React Hook Form with Zod validation
+- **Testing**: Vitest + React Testing Library
 
 ## Next Steps After Phase 1
 
