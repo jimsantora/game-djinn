@@ -38,12 +38,17 @@
 - [x] Define WebSocket event formats
 - [x] Error code standardization
 
-### 0.5 Basic CI/CD
+### 0.5 Basic CI/CD - **ON HOLD**
+**Status**: Deferred to focus on local development
+**Reason**: Prioritizing local development workflow and testing before adding CI/CD complexity
+
 - [ ] Simple GitHub Actions for tests and linting
 - [ ] Docker image building workflow
 - [ ] Basic health check scripts
 - [ ] Backup/restore scripts for homelab use
 - [ ] Simple deployment checklist
+
+**Note**: Will be addressed in a future phase when core functionality is stable and local development workflow is proven.
 
 ## Notes
 
