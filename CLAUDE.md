@@ -108,9 +108,6 @@ Core tools available in MCP server:
 ## Where to Find Details
 
 - **Implementation Details**: See `Game_Djinn_Implementation_Plan.md`
-- **API Documentation**: `docs/api.md`
-- **MCP Tools Spec**: `docs/mcp-tools.md`
-- **Deployment Guide**: `docs/deployment.md`
 
 ## Important Patterns
 
