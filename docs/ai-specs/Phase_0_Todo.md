@@ -24,12 +24,12 @@
 - [x] VSCode workspace settings and recommended extensions
 - [x] Pre-commit hooks configuration
 
-### 0.3 Database Schema & Migrations
-- [ ] Design complete database schema
-- [ ] Create initial migration scripts
-- [ ] Set up Alembic for schema versioning
-- [ ] Create seed data for testing
-- [ ] Document database relationships
+### 0.3 Database Schema & Migrations ✓
+- [x] Design complete database schema
+- [x] Create initial migration scripts
+- [x] Set up Alembic for schema versioning
+- [x] Create seed data for testing
+- [x] Document database relationships
 
 ### 0.4 API Specifications
 - [ ] Define OpenAPI schemas for all services
