@@ -1,4 +1,4 @@
-.PHONY: help setup setup-local dev test lint build clean db-migrate db-seed db-reset stop logs ps test-mcp test-mcp-local test-mcp-tools test-mcp-install test-backend
+.PHONY: help setup setup-local dev test lint build clean db-migrate db-seed db-reset stop logs ps test-mcp test-mcp-local test-mcp-tools test-mcp-install test-backend dev-backend test-api restart-backend kill-backend
 
 # Default target
 .DEFAULT_GOAL := help
@@ -202,3 +202,20 @@ type-check: ## Run type checking
 	@docker-compose run --rm ai-service mypy .
 	@docker-compose run --rm platform-sync mypy .
 	@echo "${GREEN}Type checking complete!${NC}"
+
+# Local development commands
+dev-backend: ## Start backend locally for development
+	@echo "${CYAN}Starting backend development server...${NC}"
+	@cd services/web/backend && ./scripts/start_dev.sh
+
+test-api: ## Test backend API endpoints
+	@echo "${CYAN}Testing backend API...${NC}"
+	@cd services/web/backend && ./scripts/test_api.sh
+
+restart-backend: ## Clean restart of backend server
+	@echo "${CYAN}Restarting backend server...${NC}"
+	@cd services/web/backend && ./scripts/kill_server.sh && sleep 2 && ./scripts/start_dev.sh
+
+kill-backend: ## Stop backend development server
+	@echo "${CYAN}Stopping backend server...${NC}"
+	@cd services/web/backend && ./scripts/kill_server.sh

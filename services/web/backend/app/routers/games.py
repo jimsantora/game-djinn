@@ -19,6 +19,61 @@ from app.auth.dependencies import CurrentUser
 router = APIRouter(prefix="/api/games", tags=["games"])
 
 
+@router.get("", response_model=GameSearchResponse)
+async def list_games(
+    current_user: CurrentUser,
+    session: AsyncSession = Depends(get_session),
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, le=100, description="Results per page")
+) -> GameSearchResponse:
+    """List all games with pagination."""
+    
+    # Get total count
+    count_query = select(func.count(Game.game_id))
+    count_result = await session.execute(count_query)
+    total = count_result.scalar() or 0
+    
+    # Get games with pagination
+    query = select(Game).order_by(
+        Game.metacritic_score.desc().nulls_last(),
+        Game.title
+    ).offset((page - 1) * limit).limit(limit)
+    
+    result = await session.execute(query)
+    games = result.scalars().all()
+    
+    # Build response
+    game_items = []
+    for game in games:
+        game_items.append(GameListItem(
+            game_id=game.game_id,
+            title=game.title,
+            description=game.description,
+            developer=game.developer,
+            publisher=game.publisher,
+            genres=game.genres,
+            platforms_available=game.platforms_available,
+            release_date=game.release_date,
+            metacritic_score=game.metacritic_score,
+            steam_score=game.steam_score,
+            esrb_rating=game.esrb_rating,
+            esrb_descriptors=game.esrb_descriptors,
+            cover_image_url=game.cover_image_url,
+            user_data=None
+        ))
+    
+    pages = (total + limit - 1) // limit if total > 0 else 0
+    
+    return GameSearchResponse(
+        games=game_items,
+        total=total,
+        page=page,
+        pages=pages,
+        query="",
+        filters_applied={}
+    )
+
+
 @router.get("/search", response_model=GameSearchResponse)
 async def search_games(
     current_user: CurrentUser,

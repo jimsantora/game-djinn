@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from sqlalchemy import select
-from app.database import async_session
+from app.database.connection import async_session
 from app.models import Platform
 
 # Configure logging
@@ -22,7 +22,7 @@ INITIAL_PLATFORMS = [
     {
         "platform_code": "xbox",
         "platform_name": "Xbox Game Pass",
-        "api_available": False,  # Will be enabled in future phases
+        "api_available": True,  # Steam integration working, Xbox demo enabled for testing
         "icon_url": None,
         "base_url": "https://xbox.com",
     },
@@ -46,6 +46,13 @@ INITIAL_PLATFORMS = [
         "api_available": False,  # Will be enabled in future phases
         "icon_url": None,
         "base_url": "https://playstation.com",
+    },
+    {
+        "platform_code": "nintendo",
+        "platform_name": "Nintendo eShop",
+        "api_available": False,  # Will be enabled in future phases
+        "icon_url": None,
+        "base_url": "https://nintendo.com",
     },
     {
         "platform_code": "manual",

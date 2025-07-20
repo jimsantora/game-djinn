@@ -39,7 +39,7 @@ async def list_platforms(
     query = select(Platform)
     
     if enabled_only:
-        query = query.where(Platform.is_enabled == True)
+        query = query.where(Platform.api_available == True)
     
     query = query.order_by(Platform.platform_name)
     
@@ -52,10 +52,10 @@ async def list_platforms(
             platform_code=platform.platform_code,
             platform_name=platform.platform_name,
             icon_url=platform.icon_url,
-            is_enabled=platform.is_enabled,
-            requires_api_key=platform.requires_api_key,
-            rate_limit_requests=platform.rate_limit_requests,
-            rate_limit_window=platform.rate_limit_window
+            is_enabled=platform.api_available,
+            requires_api_key=False,  # TODO: Add this field to Platform model
+            rate_limit_requests=None,  # TODO: Add this field to Platform model
+            rate_limit_window=None  # TODO: Add this field to Platform model
         )
         for platform in platforms
     ]

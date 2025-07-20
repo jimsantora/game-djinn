@@ -9,19 +9,21 @@ from sqlalchemy.engine.events import event
 logger = logging.getLogger(__name__)
 
 
-def get_database_url() -> str:
+def get_database_url(async_mode: bool = True) -> str:
     """Get database URL from environment variable."""
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
         raise ValueError("DATABASE_URL environment variable is required")
     
-    # Convert to async URL if needed
-    if db_url.startswith("postgresql://"):
-        db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    elif not db_url.startswith("postgresql+asyncpg://"):
+    if not db_url.startswith("postgresql://"):
         raise ValueError("DATABASE_URL must be a PostgreSQL URL")
     
-    return db_url
+    if async_mode:
+        # Convert to async URL for async operations
+        return db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    else:
+        # Use psycopg2 for sync operations (like Alembic)
+        return db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 
 def create_engine():
