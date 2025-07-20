@@ -4,7 +4,6 @@ import os
 import logging
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.pool import QueuePool
 from sqlalchemy.engine.events import event
 
 logger = logging.getLogger(__name__)
@@ -31,8 +30,7 @@ def create_engine():
     
     engine = create_async_engine(
         database_url,
-        # Connection pool settings
-        poolclass=QueuePool,
+        # Connection pool settings (QueuePool is default for async engines)
         pool_size=20,           # Number of connections to maintain
         max_overflow=30,        # Additional connections when pool is full
         pool_pre_ping=True,     # Validate connections before use

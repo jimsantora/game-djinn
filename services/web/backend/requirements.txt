@@ -12,6 +12,7 @@ python-multipart>=0.0.6
 websockets>=12.0
 python-socketio>=5.10.0
 pydantic[email]>=2.5.0
+greenlet>=3.0.0
 
 # Authentication
 bcrypt>=4.1.0

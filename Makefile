@@ -1,4 +1,4 @@
-.PHONY: help setup dev test lint build clean db-migrate db-seed db-reset stop logs ps test-mcp test-mcp-local test-mcp-tools test-mcp-install
+.PHONY: help setup setup-local dev test lint build clean db-migrate db-seed db-reset stop logs ps test-mcp test-mcp-local test-mcp-tools test-mcp-install test-backend
 
 # Default target
 .DEFAULT_GOAL := help
@@ -39,6 +39,16 @@ setup: ## Install all dependencies and tools
 	@docker-compose build
 	
 	@echo "${GREEN}Setup complete! Run 'make dev' to start the development environment.${NC}"
+
+# Local development setup
+setup-local: ## Install local development dependencies
+	@echo "${CYAN}Setting up local development dependencies...${NC}"
+	@echo "${YELLOW}Installing backend dependencies...${NC}"
+	@cd services/web/backend && pip install -r requirements.txt
+	@cd services/mcp-server && pip install -r requirements.txt
+	@echo "${YELLOW}Installing frontend dependencies...${NC}"
+	@cd services/web/frontend && npm install
+	@echo "${GREEN}Local dependencies installed!${NC}"
 
 # Development target
 dev: ## Start development environment
@@ -102,6 +112,11 @@ test-mcp-install: ## Install MCP test dependencies
 	@echo "${CYAN}Installing MCP test dependencies...${NC}"
 	@cd services/mcp-server && pip install -r requirements-test.txt
 	@echo "${GREEN}MCP test dependencies installed!${NC}"
+
+test-backend: ## Run backend API tests
+	@echo "${CYAN}Running backend API tests...${NC}"
+	@cd services/web/backend && DATABASE_URL="postgresql://gamedjinn:secure-password-here@localhost:5432/gamedjinn" SECRET_KEY="test-secret" MCP_API_KEY="test-mcp-key" python -m pytest tests/ -v
+	@echo "${GREEN}Backend tests completed!${NC}"
 
 # Lint target
 lint: ## Run linters (ruff, black, eslint)

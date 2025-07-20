@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
-import jwt
+from jose import jwt
 from passlib.context import CryptContext
 
 from .config import auth_config
