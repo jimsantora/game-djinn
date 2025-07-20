@@ -1,7 +1,7 @@
 # Game Djinn
 
 <div align="center">
-  <img src="game_djinn_logo.png" alt="Game Djinn Logo" width="200">
+  <img src="docs/images/game_djinn_logo.png" alt="Game Djinn Logo" width="200">
 </div>
 
 > Your AI-powered gaming companion that knows all your games, across all your platforms

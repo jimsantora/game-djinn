@@ -11,18 +11,18 @@
 - [x] Create basic README with quickstart instructions
 - [x] Add `.gitignore` for Python/Node/Docker artifacts
 
-### 0.2 Makefile-Driven Development
-- [ ] Create comprehensive Makefile with targets:
-  - [ ] `make setup` - Install all dependencies and tools
-  - [ ] `make dev` - Start development environment
-  - [ ] `make test` - Run all tests
-  - [ ] `make lint` - Run linters (ruff, black, eslint)
-  - [ ] `make build` - Build all Docker images
-  - [ ] `make clean` - Clean up artifacts
-  - [ ] `make db-migrate` - Run database migrations
-  - [ ] `make db-seed` - Seed test data
-- [ ] VSCode workspace settings and recommended extensions
-- [ ] Pre-commit hooks configuration
+### 0.2 Makefile-Driven Development ✓
+- [x] Create comprehensive Makefile with targets:
+  - [x] `make setup` - Install all dependencies and tools
+  - [x] `make dev` - Start development environment
+  - [x] `make test` - Run all tests
+  - [x] `make lint` - Run linters (ruff, black, eslint)
+  - [x] `make build` - Build all Docker images
+  - [x] `make clean` - Clean up artifacts
+  - [x] `make db-migrate` - Run database migrations
+  - [x] `make db-seed` - Seed test data
+- [x] VSCode workspace settings and recommended extensions
+- [x] Pre-commit hooks configuration
 
 ### 0.3 Database Schema & Migrations
 - [ ] Design complete database schema
