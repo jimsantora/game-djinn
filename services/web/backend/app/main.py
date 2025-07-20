@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 import structlog
 
 from app.database import close_engine, check_database_health
+from app.websocket.socket_manager import socket_app
 
 # Configure logging
 logger = structlog.get_logger(__name__)
@@ -81,7 +82,17 @@ async def health_check():
     
     return health_info
 
-# API routes will be added here
+# API routes
+from app.routers import auth, libraries, platforms, games, sync
+
+app.include_router(auth.router)
+app.include_router(libraries.router)
+app.include_router(platforms.router)
+app.include_router(games.router)
+app.include_router(sync.router)
+
+# Mount Socket.IO
+app.mount("/ws", socket_app)
 
 # Serve static files (built React app)
 if os.path.exists("static"):
