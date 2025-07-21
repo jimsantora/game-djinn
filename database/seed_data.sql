@@ -2,14 +2,14 @@
 -- This file contains test data for development and testing
 
 -- Insert platforms (these should be stable across environments)
-INSERT INTO platforms (platform_code, platform_name, api_available, icon_url, base_url) VALUES
-    ('steam', 'Steam', true, 'https://steamcdn-a.akamaihd.net/steam/apps/APPID/header.jpg', 'https://store.steampowered.com/'),
-    ('xbox', 'Xbox Game Pass', true, null, 'https://www.xbox.com/'),
-    ('gog', 'GOG Galaxy', false, null, 'https://www.gog.com/'),
-    ('epic', 'Epic Games Store', false, null, 'https://store.epicgames.com/'),
-    ('playstation', 'PlayStation Network', false, null, 'https://store.playstation.com/'),
-    ('nintendo', 'Nintendo eShop', false, null, 'https://www.nintendo.com/'),
-    ('manual', 'Manual Import', false, null, null)
+INSERT INTO platforms (platform_code, platform_name, api_available, icon_url) VALUES
+    ('steam', 'Steam', true, 'https://steamcdn-a.akamaihd.net/steam/apps/APPID/header.jpg'),
+    ('xbox', 'Xbox Game Pass', true, null),
+    ('gog', 'GOG Galaxy', false, null),
+    ('epic', 'Epic Games Store', false, null),
+    ('playstation', 'PlayStation Network', false, null),
+    ('nintendo', 'Nintendo eShop', false, null),
+    ('manual', 'Manual Import', false, null)
 ON CONFLICT (platform_code) DO NOTHING;
 
 -- Insert sample games for testing
@@ -17,7 +17,7 @@ INSERT INTO games (
     title, normalized_title, slug, description, short_description,
     release_date, developer, publisher, genres, tags, platforms_available,
     esrb_rating, esrb_descriptors, metacritic_score, steam_score,
-    cover_image_url, website_url, steam_appid, rawg_id,
+    cover_image_url, website_url, steam_appid,
     playtime_main_hours, playtime_completionist_hours
 ) VALUES 
 (
@@ -39,7 +39,6 @@ INSERT INTO games (
     'https://cdn.akamai.steamstatic.com/steam/apps/292030/header.jpg',
     'https://thewitcher.com/en/witcher3',
     292030,
-    3328,
     51,
     173
 ),
@@ -62,7 +61,6 @@ INSERT INTO games (
     'https://cdn.akamai.steamstatic.com/steam/apps/1091500/header.jpg',
     'https://www.cyberpunk.net/',
     1091500,
-    41494,
     24,
     60
 ),
@@ -85,7 +83,6 @@ INSERT INTO games (
     'https://cdn.akamai.steamstatic.com/steam/apps/1145360/header.jpg',
     'https://www.supergiantgames.com/games/hades/',
     1145360,
-    22511,
     22,
     95
 ),
@@ -108,7 +105,6 @@ INSERT INTO games (
     'https://cdn.akamai.steamstatic.com/steam/apps/945360/header.jpg',
     'https://www.innersloth.com/games/among-us/',
     945360,
-    58134,
     2,
     10
 ),
@@ -131,7 +127,6 @@ INSERT INTO games (
     null,
     'https://www.minecraft.net/',
     null,
-    22511,
     null,
     null
 )

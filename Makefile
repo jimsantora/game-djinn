@@ -1,4 +1,4 @@
-.PHONY: help setup dev test lint build clean db-migrate db-seed db-reset stop logs ps
+.PHONY: help setup setup-local dev test lint build clean db-migrate db-seed db-reset stop logs ps test-mcp test-mcp-local test-mcp-tools test-mcp-install test-backend dev-backend test-api restart-backend kill-backend test-frontend dev-frontend test-socketio test-realtime
 
 # Default target
 .DEFAULT_GOAL := help
@@ -39,6 +39,16 @@ setup: ## Install all dependencies and tools
 	@docker-compose build
 	
 	@echo "${GREEN}Setup complete! Run 'make dev' to start the development environment.${NC}"
+
+# Local development setup
+setup-local: ## Install local development dependencies
+	@echo "${CYAN}Setting up local development dependencies...${NC}"
+	@echo "${YELLOW}Installing backend dependencies...${NC}"
+	@cd services/web/backend && pip install -r requirements.txt
+	@cd services/mcp-server && pip install -r requirements.txt
+	@echo "${YELLOW}Installing frontend dependencies...${NC}"
+	@cd services/web/frontend && npm install
+	@echo "${GREEN}Local dependencies installed!${NC}"
 
 # Development target
 dev: ## Start development environment
@@ -81,6 +91,32 @@ test: ## Run all tests
 	@echo "${YELLOW}Running JavaScript tests...${NC}"
 	@docker-compose run --rm web sh -c "cd /frontend && npm test"
 	@echo "${GREEN}All tests completed!${NC}"
+
+# MCP-specific test targets
+test-mcp: ## Run MCP server tests
+	@echo "${CYAN}Running MCP server tests...${NC}"
+	@docker-compose run --rm mcp-server pytest tests/ -v --tb=short --disable-warnings
+	@echo "${GREEN}MCP tests completed!${NC}"
+
+test-mcp-local: ## Run MCP tests locally (requires local env)
+	@echo "${CYAN}Running MCP server tests locally...${NC}"
+	@cd services/mcp-server && python -m pytest tests/ -v --tb=short --disable-warnings
+	@echo "${GREEN}MCP tests completed!${NC}"
+
+test-mcp-tools: ## Run specific MCP tool tests
+	@echo "${CYAN}Running MCP tool tests...${NC}"
+	@docker-compose run --rm mcp-server pytest tests/ -v -k "$(PATTERN)" --tb=short --disable-warnings
+	@echo "${GREEN}MCP tool tests completed!${NC}"
+
+test-mcp-install: ## Install MCP test dependencies
+	@echo "${CYAN}Installing MCP test dependencies...${NC}"
+	@cd services/mcp-server && pip install -r requirements-test.txt
+	@echo "${GREEN}MCP test dependencies installed!${NC}"
+
+test-backend: ## Run backend API tests
+	@echo "${CYAN}Running backend API tests...${NC}"
+	@cd services/web/backend && DATABASE_URL="postgresql://gamedjinn:secure-password-here@localhost:5432/gamedjinn" SECRET_KEY="test-secret" MCP_API_KEY="test-mcp-key" python -m pytest tests/ -v
+	@echo "${GREEN}Backend tests completed!${NC}"
 
 # Lint target
 lint: ## Run linters (ruff, black, eslint)
@@ -166,3 +202,50 @@ type-check: ## Run type checking
 	@docker-compose run --rm ai-service mypy .
 	@docker-compose run --rm platform-sync mypy .
 	@echo "${GREEN}Type checking complete!${NC}"
+
+# Local development commands
+dev-backend: ## Start backend locally for development
+	@echo "${CYAN}Starting backend development server...${NC}"
+	@cd services/web/backend && ./scripts/start_dev.sh
+
+test-api: ## Test backend API endpoints
+	@echo "${CYAN}Testing backend API...${NC}"
+	@cd services/web/backend && ./scripts/test_api.sh
+
+restart-backend: ## Clean restart of backend server
+	@echo "${CYAN}Restarting backend server...${NC}"
+	@cd services/web/backend && ./scripts/kill_server.sh && sleep 2 && ./scripts/start_dev.sh
+
+kill-backend: ## Stop backend development server
+	@echo "${CYAN}Stopping backend server...${NC}"
+	@cd services/web/backend && ./scripts/kill_server.sh
+
+test-frontend: ## Test frontend with automatic timeout
+	@echo "${CYAN}Testing frontend...${NC}"
+	@cd services/web/frontend && ./scripts/test-frontend.sh
+
+dev-frontend: ## Start frontend development server
+	@echo "${CYAN}Starting frontend development server...${NC}"
+	@cd services/web/frontend && npm run dev
+
+test-socketio: ## Test Socket.IO integration
+	@echo "${CYAN}Testing Socket.IO integration...${NC}"
+	@echo "${YELLOW}Starting backend server for Socket.IO testing...${NC}"
+	@cd services/web/backend && ./scripts/start_dev.sh &
+	@sleep 3
+	@echo "${YELLOW}Testing Socket.IO connection...${NC}"
+	@cd services/web/frontend && npm run dev -- --host 0.0.0.0 --port 3000 &
+	@sleep 5
+	@echo "${GREEN}Socket.IO test servers started!${NC}"
+	@echo "Frontend: http://localhost:3000"
+	@echo "Backend WebSocket: ws://localhost:8000"
+	@echo "Press Ctrl+C to stop servers"
+
+test-realtime: ## Test real-time features end-to-end
+	@echo "${CYAN}Testing real-time features...${NC}"
+	@echo "${YELLOW}Ensure both backend and frontend are running${NC}"
+	@echo "1. Backend should be running at http://localhost:8000"
+	@echo "2. Frontend should be running at http://localhost:3000" 
+	@echo "3. Test sync progress by triggering a library sync"
+	@echo "4. Verify real-time updates in library table"
+	@echo "${GREEN}Manual real-time testing guide displayed${NC}"

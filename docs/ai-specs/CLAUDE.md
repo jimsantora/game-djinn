@@ -31,7 +31,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Backend**: FastAPI (all services), PostgreSQL, Redis
 - **Frontend**: React + Vite, React Query, WebSocket
 - **AI/MCP**: Official MCP Python SDK, Ollama, LangChain
-- **External APIs**: Steam, Xbox, RAWG, IGDB
+- **External APIs**: Steam, Xbox (future), PlayStation (future)
 
 ## Development Commands
 
@@ -120,7 +120,7 @@ Core tools available in MCP server:
 ## Environment Configuration
 
 Create `.env` from `.env.example` with required API keys:
-- Steam, RAWG, IGDB API keys (required)
+- Steam API key (required)
 - Database and Redis URLs
 - Secret keys for auth
 

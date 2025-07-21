@@ -44,8 +44,8 @@ Universal game catalog with rich metadata.
 
 **External IDs:**
 - `steam_appid`: Steam application ID
-- `rawg_id`: RAWG database ID
-- `igdb_id`: Internet Game Database ID
+- `xbox_id`: Xbox Live game ID (future)
+- `psn_id`: PlayStation Network game ID (future)
 
 **Search Features:**
 - `search_vector`: Full-text search index
@@ -97,7 +97,7 @@ games (1) ──── (*) game_matches ──── (*) games (1)
 Games can be matched across platforms using:
 - **Exact Title Match**: Identical normalized titles
 - **Fuzzy Title Match**: Similar titles with confidence score
-- **External ID Match**: Shared RAWG/IGDB identifiers
+- **External ID Match**: Shared platform identifiers (Steam, Xbox, PSN)
 - **Manual Match**: User-verified matches
 
 The `game_matches` table tracks these relationships with confidence scores.

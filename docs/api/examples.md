@@ -266,9 +266,7 @@ curl -H "X-API-Key: your-mcp-api-key" \
   "playtime_completionist_hours": 173,
   "platforms_available": ["steam", "gog", "xbox", "playstation"],
   "external_ids": {
-    "steam_appid": 292030,
-    "rawg_id": 3328,
-    "igdb_id": 1942
+    "steam_appid": 292030
   },
   "media": {
     "cover_image_url": "https://cdn.akamai.steamstatic.com/steam/apps/292030/header.jpg",
