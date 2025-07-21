@@ -1,4 +1,4 @@
-.PHONY: help setup setup-local dev test lint build clean db-migrate db-seed db-reset stop logs ps test-mcp test-mcp-local test-mcp-tools test-mcp-install test-backend dev-backend test-api restart-backend kill-backend
+.PHONY: help setup setup-local dev test lint build clean db-migrate db-seed db-reset stop logs ps test-mcp test-mcp-local test-mcp-tools test-mcp-install test-backend dev-backend test-api restart-backend kill-backend test-frontend dev-frontend test-socketio test-realtime
 
 # Default target
 .DEFAULT_GOAL := help
@@ -219,3 +219,33 @@ restart-backend: ## Clean restart of backend server
 kill-backend: ## Stop backend development server
 	@echo "${CYAN}Stopping backend server...${NC}"
 	@cd services/web/backend && ./scripts/kill_server.sh
+
+test-frontend: ## Test frontend with automatic timeout
+	@echo "${CYAN}Testing frontend...${NC}"
+	@cd services/web/frontend && ./scripts/test-frontend.sh
+
+dev-frontend: ## Start frontend development server
+	@echo "${CYAN}Starting frontend development server...${NC}"
+	@cd services/web/frontend && npm run dev
+
+test-socketio: ## Test Socket.IO integration
+	@echo "${CYAN}Testing Socket.IO integration...${NC}"
+	@echo "${YELLOW}Starting backend server for Socket.IO testing...${NC}"
+	@cd services/web/backend && ./scripts/start_dev.sh &
+	@sleep 3
+	@echo "${YELLOW}Testing Socket.IO connection...${NC}"
+	@cd services/web/frontend && npm run dev -- --host 0.0.0.0 --port 3000 &
+	@sleep 5
+	@echo "${GREEN}Socket.IO test servers started!${NC}"
+	@echo "Frontend: http://localhost:3000"
+	@echo "Backend WebSocket: ws://localhost:8000"
+	@echo "Press Ctrl+C to stop servers"
+
+test-realtime: ## Test real-time features end-to-end
+	@echo "${CYAN}Testing real-time features...${NC}"
+	@echo "${YELLOW}Ensure both backend and frontend are running${NC}"
+	@echo "1. Backend should be running at http://localhost:8000"
+	@echo "2. Frontend should be running at http://localhost:3000" 
+	@echo "3. Test sync progress by triggering a library sync"
+	@echo "4. Verify real-time updates in library table"
+	@echo "${GREEN}Manual real-time testing guide displayed${NC}"
