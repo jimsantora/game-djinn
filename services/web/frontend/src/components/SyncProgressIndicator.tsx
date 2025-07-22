@@ -13,12 +13,23 @@ import {
 export function SyncProgressIndicator() {
   const { syncProgress } = useSocket();
 
-  if (!syncProgress) return null;
+  // Debug: Always show component state
+  console.log('SyncProgressIndicator - syncProgress:', syncProgress);
+
+  if (!syncProgress) {
+    // Debug element to verify component is mounted
+    return (
+      <div className="hidden">
+        {/* This div verifies the component is mounted but no sync is active */}
+      </div>
+    );
+  }
 
   const getStatusIcon = () => {
     switch (syncProgress.status) {
       case 'starting':
       case 'running':
+      case 'syncing':
         return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
       case 'completed':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -33,6 +44,7 @@ export function SyncProgressIndicator() {
     switch (syncProgress.status) {
       case 'starting':
       case 'running':
+      case 'syncing':
         return 'bg-blue-50 border-blue-200';
       case 'completed':
         return 'bg-green-50 border-green-200';
@@ -44,17 +56,19 @@ export function SyncProgressIndicator() {
   };
 
   const getStatusText = () => {
+    const message = (syncProgress as any).message;
     switch (syncProgress.status) {
       case 'starting':
-        return `Starting sync for ${syncProgress.platform}...`;
+        return message || 'Starting sync...';
       case 'running':
-        return `Syncing ${syncProgress.platform} library...`;
+      case 'syncing':
+        return message || 'Syncing library...';
       case 'completed':
-        return `${syncProgress.platform} sync completed!`;
+        return message || 'Sync completed!';
       case 'failed':
-        return `${syncProgress.platform} sync failed`;
+        return message || 'Sync failed';
       default:
-        return `Syncing ${syncProgress.platform}...`;
+        return message || 'Syncing...';
     }
   };
 
@@ -68,13 +82,15 @@ export function SyncProgressIndicator() {
               {getStatusIcon()}
               <span className="font-medium text-sm">{getStatusText()}</span>
             </div>
-            <Badge variant="outline" className="text-xs">
-              {syncProgress.platform.toUpperCase()}
-            </Badge>
+            {syncProgress.platform && (
+              <Badge variant="outline" className="text-xs">
+                {syncProgress.platform.toUpperCase()}
+              </Badge>
+            )}
           </div>
 
           {/* Progress Bar */}
-          {syncProgress.status === 'running' && (
+          {(syncProgress.status === 'running' || syncProgress.status === 'syncing') && (
             <div className="space-y-2">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>
@@ -87,7 +103,7 @@ export function SyncProgressIndicator() {
           )}
 
           {/* Current Game */}
-          {syncProgress.currentGame && syncProgress.status === 'running' && (
+          {syncProgress.currentGame && (syncProgress.status === 'running' || syncProgress.status === 'syncing') && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Gamepad2 className="h-3 w-3" />
               <span>Processing: {syncProgress.currentGame}</span>

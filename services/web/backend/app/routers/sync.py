@@ -47,9 +47,11 @@ class SyncStatus(BaseModel):
 async def perform_library_sync(library_id: UUID, force: bool, sync_type: str):
     """Background task to perform library synchronization."""
     library_id_str = str(library_id)
+    print(f"[SYNC] Starting background sync for library {library_id_str}")
     
     try:
         # Emit initial progress
+        print(f"[SYNC] Emitting initial progress for {library_id_str}")
         await emit_sync_progress(library_id_str, {
             "status": "starting",
             "progress": 0,
@@ -67,6 +69,7 @@ async def perform_library_sync(library_id: UUID, force: bool, sync_type: str):
         ]
         
         for step_message, progress in steps:
+            print(f"[SYNC] Progress update: {step_message} ({progress}%)")
             await emit_sync_progress(library_id_str, {
                 "status": "syncing",
                 "progress": progress,
@@ -103,6 +106,8 @@ async def trigger_sync(
     session: AsyncSession = Depends(get_session)
 ) -> SyncResponse:
     """Trigger synchronization for a library."""
+    print(f"[SYNC] Received sync request for library {library_id}")
+    print(f"[SYNC] Request data: {sync_request}")
     
     # Check if library exists
     result = await session.execute(
@@ -120,13 +125,13 @@ async def trigger_sync(
     
     library, platform = row
     
-    if not library.is_active:
+    if not library.sync_enabled:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Library is not active"
+            detail="Library sync is not enabled"
         )
     
-    if not platform.is_enabled:
+    if not platform.api_available:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Platform is not enabled"

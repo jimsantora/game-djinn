@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUpdateLibrary, useDeleteLibrary, useSyncLibrary } from '@/hooks/useApi';
+import { useUpdateLibrary, useDeleteLibrary, useSyncLibrary, useSyncStatus, useCancelSync } from '@/hooks/useApi';
 import { useSocket } from '@/hooks/useSocket';
 import { Library } from '@/lib/api';
 import { 
@@ -27,7 +27,9 @@ import {
   RefreshCw, 
   Calendar,
   Monitor,
-  Loader2
+  Loader2,
+  Info,
+  X
 } from 'lucide-react';
 
 interface LibraryTableProps {
@@ -41,11 +43,46 @@ export function LibraryTable({ libraries, isLoading }: LibraryTableProps) {
     display_name: '',
     sync_enabled: true,
   });
+  const [checkingStatusFor, setCheckingStatusFor] = useState<string | null>(null);
 
   const updateLibrary = useUpdateLibrary();
   const deleteLibrary = useDeleteLibrary();
   const syncLibrary = useSyncLibrary();
-  const { syncProgress } = useSocket();
+  const cancelSync = useCancelSync();
+  const { syncProgress, joinLibrary, leaveLibrary, connected } = useSocket();
+  
+  // Check sync status for library if selected
+  const { data: syncStatusData } = useSyncStatus(checkingStatusFor);
+  
+  // Debug: Log sync progress changes
+  useEffect(() => {
+    if (syncProgress) {
+      console.log('LibraryTable - syncProgress updated:', syncProgress);
+    }
+  }, [syncProgress]);
+
+  // Join library rooms when component mounts and libraries are available
+  // Re-join when socket reconnects
+  useEffect(() => {
+    if (connected && libraries.length > 0) {
+      console.log('Joining library rooms for', libraries.length, 'libraries');
+      libraries.forEach(library => {
+        joinLibrary(library.library_id);
+        
+        // If any library is syncing, we should expect to receive progress events
+        if (library.sync_status === 'syncing') {
+          console.log(`Library ${library.library_id} is syncing, expecting progress events`);
+        }
+      });
+
+      // Cleanup: leave rooms when component unmounts
+      return () => {
+        libraries.forEach(library => {
+          leaveLibrary(library.library_id);
+        });
+      };
+    }
+  }, [connected, libraries, joinLibrary, leaveLibrary]);
 
   const handleEdit = (library: Library) => {
     setEditingLibrary(library);
@@ -81,30 +118,109 @@ export function LibraryTable({ libraries, isLoading }: LibraryTableProps) {
   };
 
   const handleSync = async (libraryId: string) => {
+    console.log('Sync button clicked for library:', libraryId);
     try {
-      await syncLibrary.mutateAsync(libraryId);
+      const result = await syncLibrary.mutateAsync(libraryId);
+      console.log('Sync started successfully:', result);
     } catch (error) {
       console.error('Failed to sync library:', error);
     }
   };
 
+  const handleCancelSync = async (libraryId: string) => {
+    if (!confirm('Are you sure you want to cancel this sync?')) return;
+    
+    try {
+      await cancelSync.mutateAsync(libraryId);
+      setCheckingStatusFor(null);
+    } catch (error) {
+      console.error('Failed to cancel sync:', error);
+    }
+  };
+
   const getStatusBadge = (status: string, library: Library) => {
     // Check if this library is currently syncing based on real-time progress
-    const isCurrentlySync = syncProgress?.platform.toLowerCase() === library.platform_name.toLowerCase() && syncProgress?.status === 'running';
+    // The syncProgress should contain library_id to match specific libraries
+    const isCurrentlySync = syncProgress && 
+      (syncProgress as any).library_id === library.library_id && 
+      (syncProgress.status === 'running' || syncProgress.status === 'syncing' || syncProgress.status === 'starting');
     
-    if (isCurrentlySync) {
+    // Also check if the status from the database says syncing
+    const showSyncUI = isCurrentlySync || status === 'syncing';
+    
+    if (showSyncUI) {
+      const progress = isCurrentlySync ? syncProgress.progress : 0;
+      const message = isCurrentlySync ? (syncProgress as any).message : 
+        (status === 'syncing' && !isCurrentlySync ? 'Waiting for sync updates...' : 'Syncing...');
+      
+      // If status is syncing but no real-time updates, show a different UI
+      const isStaleSync = status === 'syncing' && !isCurrentlySync;
+      
+      // Check if we're checking status for this library
+      const isCheckingStatus = checkingStatusFor === library.library_id;
+      const statusInfo = isCheckingStatus && syncStatusData ? syncStatusData : null;
+      
       return (
-        <div className="space-y-1">
-          <Badge variant="default" className="bg-blue-100 text-blue-800 flex items-center gap-1">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Syncing
-          </Badge>
-          {syncProgress.progress > 0 && (
-            <div className="w-20">
-              <Progress value={syncProgress.progress} className="h-1" />
-              <div className="text-xs text-muted-foreground text-center">
-                {Math.round(syncProgress.progress)}%
-              </div>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <Badge 
+              variant="default" 
+              className={isStaleSync ? "bg-yellow-100 text-yellow-800" : "bg-blue-100 text-blue-800"}
+            >
+              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+              {isStaleSync ? 'Sync in Progress' : 'Syncing'}
+            </Badge>
+            {progress > 0 && (
+              <span className="text-xs text-muted-foreground">
+                {Math.round(progress)}%
+              </span>
+            )}
+            {isStaleSync && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 w-5 p-0"
+                onClick={() => setCheckingStatusFor(
+                  checkingStatusFor === library.library_id ? null : library.library_id
+                )}
+                title={checkingStatusFor === library.library_id ? "Hide sync status" : "Check sync status"}
+              >
+                <Info className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+          {progress > 0 && (
+            <Progress value={progress} className="h-1.5 w-full max-w-[120px]" />
+          )}
+          {message && (
+            <div className="text-xs text-muted-foreground truncate max-w-[120px]" title={message}>
+              {message}
+            </div>
+          )}
+          {statusInfo && (
+            <div className="text-xs bg-gray-100 p-2 rounded space-y-1">
+              <div className="font-medium">Sync Status Check:</div>
+              <div>Status: {statusInfo.status}</div>
+              <div>Progress: {Math.round(statusInfo.progress_percentage || 0)}%</div>
+              {statusInfo.games_processed !== undefined && (
+                <div>Games: {statusInfo.games_processed}/{statusInfo.total_games || '?'}</div>
+              )}
+              {statusInfo.current_step && (
+                <div>Step: {statusInfo.current_step}</div>
+              )}
+              {statusInfo.error_message && (
+                <div className="text-red-600">Error: {statusInfo.error_message}</div>
+              )}
+              <Button
+                size="sm"
+                variant="destructive"
+                className="h-6 text-xs"
+                onClick={() => handleCancelSync(library.library_id)}
+                disabled={cancelSync.isPending}
+              >
+                <X className="h-3 w-3 mr-1" />
+                Cancel Sync
+              </Button>
             </div>
           )}
         </div>
@@ -203,15 +319,17 @@ export function LibraryTable({ libraries, isLoading }: LibraryTableProps) {
                     onClick={() => handleSync(library.library_id)}
                     disabled={
                       syncLibrary.isPending || 
-                      (syncProgress?.platform.toLowerCase() === library.platform_name.toLowerCase() && 
-                       syncProgress?.status === 'running')
+                      !!(syncProgress && 
+                       (syncProgress as any).library_id === library.library_id &&
+                       (syncProgress.status === 'running' || syncProgress.status === 'syncing'))
                     }
                     title="Sync library"
                   >
                     <RefreshCw 
                       className={`h-4 w-4 ${
-                        (syncProgress?.platform.toLowerCase() === library.platform_name.toLowerCase() && 
-                         syncProgress?.status === 'running') ? 'animate-spin' : ''
+                        (syncProgress && 
+                         (syncProgress as any).library_id === library.library_id &&
+                         (syncProgress.status === 'running' || syncProgress.status === 'syncing')) ? 'animate-spin' : ''
                       }`} 
                     />
                   </Button>

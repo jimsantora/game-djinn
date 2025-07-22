@@ -105,3 +105,24 @@ export function useSyncLibrary() {
     },
   });
 }
+
+export function useSyncStatus(libraryId: string | null) {
+  return useQuery({
+    queryKey: ['sync-status', libraryId],
+    queryFn: () => librariesApi.syncStatus(libraryId!),
+    enabled: !!libraryId,
+    refetchInterval: 5000, // Check every 5 seconds
+  });
+}
+
+export function useCancelSync() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: librariesApi.cancelSync,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['libraries'] });
+      queryClient.invalidateQueries({ queryKey: ['sync-status'] });
+    },
+  });
+}

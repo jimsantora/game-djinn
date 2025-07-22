@@ -39,7 +39,20 @@ export function LibraryCreateDialog({ children, onSuccess }: LibraryCreateDialog
     e.preventDefault();
     
     try {
-      await createLibrary.mutateAsync(formData);
+      // Convert platform_id to platform_code
+      const selectedPlatform = platforms?.find(p => p.platform_id === formData.platform_id);
+      if (!selectedPlatform) {
+        console.error('Platform not found');
+        return;
+      }
+      
+      const libraryData = {
+        platform_code: selectedPlatform.platform_code,
+        user_identifier: formData.user_identifier,
+        display_name: formData.display_name,
+      };
+      
+      await createLibrary.mutateAsync(libraryData);
       setOpen(false);
       setFormData({
         platform_id: '',

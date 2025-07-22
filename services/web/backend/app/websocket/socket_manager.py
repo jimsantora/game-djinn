@@ -15,18 +15,20 @@ logger = structlog.get_logger(__name__)
 sio = socketio.AsyncServer(
     async_mode="asgi",
     cors_allowed_origins=["http://localhost:3000", "http://localhost:5173"],
-    logger=logger,
-    engineio_logger=logger
+    logger=True,
+    engineio_logger=True
 )
 
-# Create ASGI app
-socket_app = socketio.ASGIApp(sio, socketio_path="/ws/socket.io")
+# Create ASGI app  
+socket_app = socketio.ASGIApp(sio)
 
 
 @sio.event
 async def connect(sid: str, environ: Dict[str, Any], auth: Optional[Dict[str, Any]] = None):
     """Handle client connection."""
     logger.info(f"Client {sid} attempting to connect")
+    logger.info(f"Auth data received: {auth}")
+    logger.info(f"Auth enabled: {auth_config.auth_enabled}")
     
     # Authentication check
     if auth_config.auth_enabled:
@@ -35,12 +37,15 @@ async def connect(sid: str, environ: Dict[str, Any], auth: Optional[Dict[str, An
         # Try to get token from auth data
         if auth and "token" in auth:
             token = auth["token"]
+            logger.info(f"Token from auth data: {token[:20]}...")
         
         # Try to get token from query parameters
         if not token and "QUERY_STRING" in environ:
             query_string = environ["QUERY_STRING"].decode()
+            logger.info(f"Query string: {query_string}")
             if "token=" in query_string:
                 token = query_string.split("token=")[1].split("&")[0]
+                logger.info(f"Token from query: {token[:20]}...")
         
         # Verify token
         if not token:
@@ -147,30 +152,53 @@ async def leave_library(sid: str, data: Dict[str, Any]):
 # Utility functions for emitting events from other parts of the application
 
 async def emit_sync_progress(library_id: str, progress_data: Dict[str, Any]):
-    """Emit sync progress to library room."""
-    room_name = f"library:{library_id}"
-    await sio.emit("sync:progress", {
+    """Emit sync progress to library room and general room."""
+    data = {
         "library_id": library_id,
         **progress_data
-    }, room=room_name)
+    }
+    
+    logger.info(f"[SOCKET] Emitting sync:progress for library {library_id}")
+    logger.info(f"[SOCKET] Progress data: {data}")
+    
+    # Emit to library-specific room
+    room_name = f"library:{library_id}"
+    await sio.emit("sync:progress", data, room=room_name)
+    logger.info(f"[SOCKET] Emitted to room {room_name}")
+    
+    # Also emit to general room for app-wide indicators
+    await sio.emit("sync:progress", data, room="general")
+    logger.info(f"[SOCKET] Emitted to general room")
 
 
 async def emit_sync_complete(library_id: str, result_data: Dict[str, Any]):
-    """Emit sync completion to library room."""
-    room_name = f"library:{library_id}"
-    await sio.emit("sync:complete", {
+    """Emit sync completion to library room and general room."""
+    data = {
         "library_id": library_id,
         **result_data
-    }, room=room_name)
+    }
+    
+    # Emit to library-specific room
+    room_name = f"library:{library_id}"
+    await sio.emit("sync:complete", data, room=room_name)
+    
+    # Also emit to general room for app-wide indicators
+    await sio.emit("sync:complete", data, room="general")
 
 
 async def emit_sync_error(library_id: str, error_data: Dict[str, Any]):
-    """Emit sync error to library room."""
-    room_name = f"library:{library_id}"
-    await sio.emit("sync:error", {
+    """Emit sync error to library room and general room."""
+    data = {
         "library_id": library_id,
         **error_data
-    }, room=room_name)
+    }
+    
+    # Emit to library-specific room
+    room_name = f"library:{library_id}"
+    await sio.emit("sync:error", data, room=room_name)
+    
+    # Also emit to general room for app-wide indicators
+    await sio.emit("sync:error", data, room="general")
 
 
 async def emit_library_updated(library_id: str, library_data: Dict[str, Any]):

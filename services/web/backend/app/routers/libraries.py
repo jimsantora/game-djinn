@@ -51,7 +51,7 @@ async def list_libraries(
             platform_name=platform.platform_name,
             user_identifier=library.user_identifier,
             display_name=library.display_name,
-            is_active=library.is_active,
+            is_active=library.sync_enabled,
             last_sync_at=library.last_sync_at,
             sync_status=library.sync_status,
             games_count=games_count,
@@ -124,7 +124,7 @@ async def create_library(
             detail=f"Platform '{library_data.platform_code}' not found"
         )
     
-    if not platform.is_enabled:
+    if not platform.api_available:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Platform '{library_data.platform_code}' is not enabled"
@@ -149,8 +149,8 @@ async def create_library(
         platform_id=platform.platform_id,
         user_identifier=library_data.user_identifier,
         display_name=library_data.display_name,
-        credentials=library_data.credentials or {},
-        is_active=True,
+        api_credentials=library_data.credentials or {},
+        sync_enabled=True,
         sync_status="pending"
     )
     
@@ -165,7 +165,7 @@ async def create_library(
         platform_name=platform.platform_name,
         user_identifier=new_library.user_identifier,
         display_name=new_library.display_name,
-        is_active=new_library.is_active,
+        is_active=new_library.sync_enabled,
         last_sync_at=new_library.last_sync_at,
         sync_status=new_library.sync_status,
         games_count=0,

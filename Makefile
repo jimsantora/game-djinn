@@ -35,6 +35,13 @@ setup: ## Install all dependencies and tools
 	@echo "${YELLOW}Creating data directories...${NC}"
 	@mkdir -p data/postgres data/redis data/ollama
 	
+	@echo "${YELLOW}Installing local dependencies...${NC}"
+	@echo "${YELLOW}Installing backend dependencies...${NC}"
+	@cd services/web/backend && pip install -r requirements.txt
+	@cd services/mcp-server && pip install -r requirements.txt
+	@echo "${YELLOW}Installing frontend dependencies...${NC}"
+	@cd services/web/frontend && npm install
+	
 	@echo "${YELLOW}Building Docker images...${NC}"
 	@docker-compose build
 	

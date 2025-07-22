@@ -14,7 +14,7 @@ interface AuthConfig {
 interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
-  authEnabled: boolean;
+  authEnabled: boolean | null;
   user: User | null;
   token: string | null;
   config: AuthConfig | null;
@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>({
     isLoading: true,
     isAuthenticated: false,
-    authEnabled: false,
+    authEnabled: null,
     user: null,
     token: null,
     config: null,
@@ -45,23 +45,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check if user has valid token when auth is enabled
   useEffect(() => {
-    if (state.authEnabled && !state.isAuthenticated) {
-      const savedToken = localStorage.getItem('auth_token');
-      if (savedToken) {
-        // Validate token by making an authenticated request
-        validateToken(savedToken);
-      } else {
-        setState(prev => ({ ...prev, isLoading: false }));
+    if (state.authEnabled !== null) { // Only run when authEnabled is determined
+      if (state.authEnabled && !state.isAuthenticated) {
+        const savedToken = localStorage.getItem('auth_token');
+        if (savedToken) {
+          // Validate token by making an authenticated request
+          validateToken(savedToken);
+        } else {
+          setState(prev => ({ ...prev, isLoading: false }));
+        }
+      } else if (!state.authEnabled) {
+        setState(prev => ({ 
+          ...prev, 
+          isLoading: false, 
+          isAuthenticated: true, // Always authenticated when auth is disabled
+          user: { email: 'admin', is_admin: true } // Default user when auth disabled
+        }));
       }
-    } else if (!state.authEnabled) {
-      setState(prev => ({ 
-        ...prev, 
-        isLoading: false, 
-        isAuthenticated: true, // Always authenticated when auth is disabled
-        user: { email: 'admin', is_admin: true } // Default user when auth disabled
-      }));
     }
-  }, [state.authEnabled]);
+  }, [state.authEnabled, state.isAuthenticated]);
 
   const checkAuthConfig = async () => {
     try {
@@ -71,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...prev,
         config,
         authEnabled: config.auth_enabled,
+        isLoading: false,
       }));
     } catch (error) {
       console.error('Failed to check auth config:', error);
@@ -118,9 +121,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('auth_token');
     setState(prev => ({
       ...prev,
-      isAuthenticated: !prev.authEnabled, // Stay authenticated if auth is disabled
+      isAuthenticated: prev.authEnabled === false, // Stay authenticated if auth is disabled
       token: null,
-      user: prev.authEnabled ? null : { email: 'admin', is_admin: true },
+      user: prev.authEnabled === false ? { email: 'admin', is_admin: true } : null,
     }));
   };
 

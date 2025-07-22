@@ -91,8 +91,8 @@ app.include_router(platforms.router)
 app.include_router(games.router)
 app.include_router(sync.router)
 
-# Mount Socket.IO
-app.mount("/ws", socket_app)
+# Mount Socket.IO at root level  
+app.mount("/socket.io", socket_app)
 
 # Serve static files (built React app)
 if os.path.exists("static"):
